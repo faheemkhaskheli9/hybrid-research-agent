@@ -1,0 +1,5 @@
+[project]
+name = "hybrid-research-agent"
+version = "0.1.0"
+description = "Knowledge Base + Internet Research Agent"
+requires-python = ">=3.10"
