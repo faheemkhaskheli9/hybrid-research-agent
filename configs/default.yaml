@@ -1,0 +1,5 @@
+source_dir: examples/sample_docs
+vector_store_path: examples/vector_store.json
+chunk_size: 500
+chunk_overlap: 50
+embedding_dimensions: 256

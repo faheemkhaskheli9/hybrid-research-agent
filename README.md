@@ -4,7 +4,7 @@
 > This is an original, from-scratch build. It is not affiliated with, and does not
 > contain any code, prompts, data, or business logic from, any employer or client.
 
-![status](https://img.shields.io/badge/status-planned-lightgrey)
+![status](https://img.shields.io/badge/status-in--progress-yellow)
 ![python](https://img.shields.io/badge/python-3.10%2B-blue)
 ![license](https://img.shields.io/badge/license-MIT-green)
 
@@ -81,12 +81,18 @@ cd hybrid-research-agent
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt   # or: pip install -e .
 cp .env.example .env              # fill in API keys / config
+python scripts/ingest_docs.py --config configs/default.yaml
 ```
 
 ## 8. Dataset
 
-Document which public dataset(s) or synthetic data generators are used here.
-No proprietary, employer-owned, or client-identifiable data is used in this project.
+Phase 1 ingests the sample Markdown docs in `examples/sample_docs/` (short,
+original explainers on vector DBs and RAG — no proprietary or
+employer-owned content). Point `configs/default.yaml`'s `source_dir` at any
+directory of `.txt`/`.md` files to ingest your own. Embeddings default to a
+deterministic offline `HashingEmbedder` (see `src/kb/embeddings.py`) so
+ingestion and tests need no API key; `OpenAIEmbedder` is provided as a
+drop-in real-provider swap.
 
 ## 9. Training / Execution
 

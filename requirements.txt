@@ -1,1 +1,5 @@
-# Fill in with the exact package versions used once implementation starts.
+numpy>=1.26
+PyYAML>=6.0
+langchain>=0.2
+openai>=1.30
+pytest>=8.0
