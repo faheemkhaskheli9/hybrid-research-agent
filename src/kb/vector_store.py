@@ -34,6 +34,13 @@ class VectorStore(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    def query_with_scores(self, embedding: np.ndarray, top_k: int = 5) -> List[tuple]:
+        """Like `query`, but also returns each record's cosine similarity
+        score so callers can apply a similarity threshold (see kb_search,
+        issue #2)."""
+        raise NotImplementedError
+
+    @abstractmethod
     def __len__(self) -> int:
         raise NotImplementedError
 
@@ -77,6 +84,9 @@ class JSONVectorStore(VectorStore):
         self._save()
 
     def query(self, embedding: np.ndarray, top_k: int = 5) -> List[VectorRecord]:
+        return [record for _, record in self.query_with_scores(embedding, top_k)]
+
+    def query_with_scores(self, embedding: np.ndarray, top_k: int = 5) -> List[tuple]:
         if not self._records:
             return []
         scored = []
@@ -87,7 +97,7 @@ class JSONVectorStore(VectorStore):
             score = float(np.dot(query_vec, vec) / denom)
             scored.append((score, record))
         scored.sort(key=lambda pair: pair[0], reverse=True)
-        return [record for _, record in scored[:top_k]]
+        return scored[:top_k]
 
     def __len__(self) -> int:
         return len(self._records)
