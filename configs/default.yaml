@@ -1,5 +1,17 @@
 source_dir: examples/sample_docs
-vector_store_path: examples/vector_store.json
 chunk_size: 500
 chunk_overlap: 50
-embedding_dimensions: 256
+
+# Swap `provider: hashing` for `provider: openai` (and set OPENAI_API_KEY in
+# .env) to re-run ingestion against real embeddings -- no code change.
+embedding:
+  provider: hashing   # hashing | openai
+  model: text-embedding-3-small   # only used when provider: openai
+  dimensions: 256
+
+# `backend: json` is the only implemented vector store today (see
+# src/kb/vector_store.py); the shape leaves room for a real service
+# (Chroma/pgvector/Pinecone) behind the same VectorStore interface later.
+vector_store:
+  backend: json
+  path: examples/vector_store.json

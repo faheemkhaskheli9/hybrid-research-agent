@@ -1,6 +1,7 @@
 #!/usr/bin/env python
-"""CLI entrypoint for issue #1: ingest a directory of documents into the
-configured vector store.
+"""CLI entrypoint for issue #1/#3: ingest a directory of documents into the
+configured vector store, using a config-driven embedding provider and
+vector store backend (see src/kb/config.py).
 
 Usage:
     python scripts/ingest_docs.py --config configs/default.yaml
@@ -12,11 +13,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
-import yaml
-
-from kb.embeddings import HashingEmbedder
+from kb.config import KBConfigError, build_embedder, build_vector_store, load_kb_config
 from kb.ingest import IngestionPipeline
-from kb.vector_store import JSONVectorStore
 
 
 def main(argv=None) -> int:
@@ -26,24 +24,26 @@ def main(argv=None) -> int:
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
-    config_path = Path(args.config)
-    if not config_path.exists():
-        logging.error("Config file not found: %s", config_path)
+    try:
+        config = load_kb_config(args.config)
+        embedder = build_embedder(config.embedding)
+        store = build_vector_store(config.vector_store)
+    except KBConfigError as exc:
+        logging.error("%s", exc)
         return 1
-    with config_path.open("r", encoding="utf-8") as fh:
-        config = yaml.safe_load(fh) or {}
 
-    embedder = HashingEmbedder(dimensions=config.get("embedding_dimensions", 256))
-    store = JSONVectorStore(config["vector_store_path"])
     pipeline = IngestionPipeline(
         embedder=embedder,
         store=store,
-        chunk_size=config.get("chunk_size", 800),
-        chunk_overlap=config.get("chunk_overlap", 100),
+        chunk_size=config.chunk_size,
+        chunk_overlap=config.chunk_overlap,
     )
 
-    written = pipeline.ingest_directory(config["source_dir"])
-    print(f"Wrote/updated {written} chunks -> {config['vector_store_path']} ({len(store)} total chunks stored)")
+    written = pipeline.ingest_directory(config.source_dir)
+    print(
+        f"Wrote/updated {written} chunks -> {config.vector_store.path} "
+        f"({len(store)} total chunks stored, embedding.provider={config.embedding.provider})"
+    )
     return 0
 
 

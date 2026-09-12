@@ -96,11 +96,30 @@ drop-in real-provider swap.
 
 ## 9. Training / Execution
 
-Document the commands used to run training, ingestion, or the main pipeline, e.g.:
+Ingest a directory of documents into the configured vector store:
 
 ```bash
-python -m src.main --config configs/default.yaml
+python scripts/ingest_docs.py --config configs/default.yaml
 ```
+
+`configs/default.yaml` names the embedding provider/model and vector store
+backend as data (`src/kb/config.py`), not code:
+
+```yaml
+embedding:
+  provider: hashing   # hashing (offline, default) | openai (needs OPENAI_API_KEY)
+  model: text-embedding-3-small
+  dimensions: 256
+vector_store:
+  backend: json        # local, dependency-free (see src/kb/vector_store.py)
+  path: examples/vector_store.json
+```
+
+Switching `embedding.provider` to `openai` (with `OPENAI_API_KEY` set — see
+`.env.example`) and re-running the same command swaps embedding models with
+no code change. An invalid config (unknown provider/backend, missing API
+key, out-of-range chunk size) raises `KBConfigError` with a message naming
+the bad field before ingestion starts.
 
 ## 10. Evaluation
 
